@@ -4,7 +4,8 @@ FROM node:22.5.1 as builder
 WORKDIR /usr/src/app
 
 RUN npm install mysql2 --save && \
-    npm install chance --save
+    npm install chance --save && \
+    npm install express --save
 
 
 # Stage 2: Production stage
