@@ -31,8 +31,7 @@ services:
     expose:
       - "3000"
     volumes:
-      - ./node:/usr/src/app
-      - node-html:/usr/src/app/public
+      - /usr/src/app/node_modules
     healthcheck:
       test: ["CMD-SHELL", "wget --spider -q http://localhost:3000 || exit 1"]
       interval: 30s
@@ -52,7 +51,6 @@ services:
       - "8080:80"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - node-html:/usr/share/nginx/html
     depends_on:
       node:
         condition: service_healthy
@@ -60,6 +58,3 @@ services:
 networks:
   fullcycle-net:
     driver: bridge
-
-volumes:
-  node-html:

@@ -17,6 +17,9 @@ WORKDIR /usr/src/app
 COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/package*.json ./
 COPY --from=builder /usr/src/app .
+COPY server.js .
+
+RUN [ ! -e /node_modules ] && ln -s /usr/src/app/node_modules /node_modules || echo "Link simbólico já existe"
 
 EXPOSE 3000
 
