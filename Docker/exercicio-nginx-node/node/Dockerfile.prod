@@ -1,26 +1,28 @@
-# Stage 1: Build stage
-FROM node:22.5.1 as builder
+# # Stage 1: Build stage
+# FROM node:22.5.1 as builder
 
-WORKDIR /usr/src/app
+# WORKDIR /usr/src/app
 
-RUN npm install mysql2 --save && \
-    npm install chance --save && \
-    npm install express --save
+# RUN npm install mysql2 --save && \
+#     npm install chance --save && \
+#     npm install express --save
 
 
 # Stage 2: Production stage
 FROM node:22.5.1-alpine
 
+# USER node
+
 WORKDIR /usr/src/app
 
 # Copy dependencies from the builder stage
-COPY --from=builder /usr/src/app/node_modules ./node_modules
-COPY --from=builder /usr/src/app/package*.json ./
-COPY --from=builder /usr/src/app .
-COPY server.js .
+# COPY --from=builder /usr/src/app/node_modules ./node_modules
+# COPY --from=builder /usr/src/app/package*.json ./
+# COPY --from=builder /usr/src/app .
+# COPY server.js .
 
 RUN [ ! -e /node_modules ] && ln -s /usr/src/app/node_modules /node_modules || echo "Link simbólico já existe"
 
 EXPOSE 3000
 
-CMD ["node", "/usr/src/app/server.js"]
+# CMD ["node", "/usr/src/app/server.js"]

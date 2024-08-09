@@ -25,12 +25,14 @@ services:
       dockerfile: Dockerfile.prod
     image: node:22.5.1-alpine
     container_name: node
+    entrypoint: sh -c "npm install && node server.js"
     tty: true
     networks:
       - fullcycle-net
     expose:
       - "3000"
     volumes:
+      - ./node:/usr/src/app
       - /usr/src/app/node_modules
     healthcheck:
       test: ["CMD-SHELL", "wget --spider -q http://localhost:3000 || exit 1"]
