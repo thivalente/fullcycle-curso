@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
 	"os"
@@ -8,13 +9,14 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/thivalente/fullcycle-curso/Go/GraphQL/graph"
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/thivalente/fullcycle-curso/Go/GraphQL/internal/database"
+	_ "modernc.org/sqlite"
 )
 
 const defaultPort = "8080"
 
 func main() {
-	db, err := sql.Open("sqlite3", "./data.db")
+	db, err := sql.Open("sqlite", "./data.db")
 
 	if (err != nil) {
 		log.Fatalf("Failed to open database: %v", err)
@@ -23,6 +25,7 @@ func main() {
 	defer db.Close()
 
 	categoryDb := database.NewCategory(db)
+	courseDb := database.NewCourse(db)
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -30,7 +33,8 @@ func main() {
 	}
 
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{
-		CategoryDB := categoryDb
+		CategoryDB: categoryDb,
+		CourseDB: courseDb,
 	}}))
 
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
