@@ -11,45 +11,168 @@ import (
 	"github.com/thivalente/fullcycle-curso/Go/GraphQL/graph/model"
 )
 
+// Courses is the resolver for the courses field.
+func (r *categoryResolver) Courses(ctx context.Context, obj *model.Category) ([]*model.Course, error) {
+	courses, err := r.CourseDB.FindByCategoryId(obj.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var coursesModel []*model.Course
+
+	for _, course := range courses {
+		coursesModel = append(coursesModel, &model.Course{
+			ID:          course.ID,
+			Name:        course.Name,
+			Description: &course.Description,
+		})
+	}
+
+	return coursesModel, nil
+}
+
+// Category is the resolver for the category field.
+func (r *courseResolver) Category(ctx context.Context, obj *model.Course) (*model.Category, error) {
+	category, err := r.CategoryDB.FindByCourseId(obj.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Se nenhuma categoria for encontrada, retorne nil sem erro (ou um erro customizado, se preferir)
+	if category == nil {
+		return nil, fmt.Errorf("category with courseID %s not found", obj.ID)
+	}
+
+	// Converta a categoria encontrada para o modelo GraphQL e retorne
+	return &model.Category{
+		ID:          category.ID,
+		Name:        category.Name,
+		Description: &category.Description,
+	}, nil
+}
+
 // CreateCategory is the resolver for the createCategory field.
 func (r *mutationResolver) CreateCategory(ctx context.Context, input model.NewCategory) (*model.Category, error) {
 	category, err := r.CategoryDB.Create(input.Name, *input.Description)
 
-	if (err != nil) {
+	if err != nil {
 		return nil, err
 	}
-	
-	return &model.Category {
-		ID: category.ID,
-		Name: category.Name,
-		Description: category.Description,
+
+	return &model.Category{
+		ID:          category.ID,
+		Name:        category.Name,
+		Description: &category.Description,
 	}, nil
 }
 
 // CreateCourse is the resolver for the createCourse field.
 func (r *mutationResolver) CreateCourse(ctx context.Context, input model.NewCourse) (*model.Course, error) {
-	panic(fmt.Errorf("not implemented: CreateCourse - createCourse"))
+	course, err := r.CourseDB.Create(input.Name, *input.Description, input.CategoryID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.Course{
+		ID:          course.ID,
+		Name:        course.Name,
+		Description: &course.Description,
+	}, nil
 }
 
 // Categories is the resolver for the categories field.
 func (r *queryResolver) Categories(ctx context.Context) ([]*model.Category, error) {
-	panic(fmt.Errorf("not implemented: Categories - categories"))
+	categories, err := r.CategoryDB.FindAll()
+
+	if err != nil {
+		return nil, err
+	}
+
+	var categoriesModel []*model.Category
+
+	for _, category := range categories {
+		categoriesModel = append(categoriesModel, &model.Category{
+			ID:          category.ID,
+			Name:        category.Name,
+			Description: &category.Description,
+		})
+	}
+
+	return categoriesModel, nil
 }
 
 // Category is the resolver for the category field.
 func (r *queryResolver) Category(ctx context.Context, id string) (*model.Category, error) {
-	panic(fmt.Errorf("not implemented: Category - category"))
+	category, err := r.CategoryDB.FindById(id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Se nenhuma categoria for encontrada, retorne nil sem erro (ou um erro customizado, se preferir)
+	if category == nil {
+		return nil, fmt.Errorf("category with ID %s not found", id)
+	}
+
+	// Converta a categoria encontrada para o modelo GraphQL e retorne
+	return &model.Category{
+		ID:          category.ID,
+		Name:        category.Name,
+		Description: &category.Description,
+	}, nil
 }
 
 // Courses is the resolver for the courses field.
 func (r *queryResolver) Courses(ctx context.Context) ([]*model.Course, error) {
-	panic(fmt.Errorf("not implemented: Courses - courses"))
+	courses, err := r.CourseDB.FindAll()
+
+	if err != nil {
+		return nil, err
+	}
+
+	var coursesModel []*model.Course
+
+	for _, course := range courses {
+		coursesModel = append(coursesModel, &model.Course{
+			ID:          course.ID,
+			Name:        course.Name,
+			Description: &course.Description,
+		})
+	}
+
+	return coursesModel, nil
 }
 
 // Course is the resolver for the course field.
 func (r *queryResolver) Course(ctx context.Context, id string) (*model.Course, error) {
-	panic(fmt.Errorf("not implemented: Course - course"))
+	// Use a função FindById para buscar a categoria pelo ID
+	course, err := r.CourseDB.FindById(id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Se nenhum course for encontrado, retorne nil sem erro (ou um erro customizado, se preferir)
+	if course == nil {
+		return nil, fmt.Errorf("course with ID %s not found", id)
+	}
+
+	// Converta o course encontrado para o modelo GraphQL e retorne
+	return &model.Course{
+		ID:          course.ID,
+		Name:        course.Name,
+		Description: &course.Description,
+	}, nil
 }
+
+// Category returns CategoryResolver implementation.
+func (r *Resolver) Category() CategoryResolver { return &categoryResolver{r} }
+
+// Course returns CourseResolver implementation.
+func (r *Resolver) Course() CourseResolver { return &courseResolver{r} }
 
 // Mutation returns MutationResolver implementation.
 func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
@@ -57,5 +180,7 @@ func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
+type categoryResolver struct{ *Resolver }
+type courseResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
