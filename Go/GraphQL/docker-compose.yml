@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  go:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: golang:alpine3.20
+    container_name: go
+    tty: true
+    volumes:
+      - ./app:/go/app
+    ports:
+      - "8080:8080"
+    mem_limit: 512m  # Aumente para 512 MB ou mais, conforme necessário

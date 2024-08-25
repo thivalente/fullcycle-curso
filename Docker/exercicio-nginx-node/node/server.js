@@ -13,6 +13,39 @@ const config = {
 
 const connection = mysql.createConnection(config);
 
+const checkAndCreateTable = () => {
+  connection.query(`
+    SELECT COUNT(*) AS count 
+    FROM information_schema.tables 
+    WHERE table_schema = 'nodedb' 
+    AND table_name = 'people';
+  `, (err, results) => {
+    if (err) {
+      console.error('Erro ao verificar a tabela:', err);
+      return;
+    }
+
+    const tableExists = results[0].count > 0;
+
+    if (!tableExists) {
+      connection.query(`
+        CREATE TABLE people (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          name VARCHAR(255)
+        );
+      `, (err) => {
+        if (err) {
+          console.error('Erro ao criar a tabela:', err);
+          return;
+        }
+        console.log('Tabela "people" criada com sucesso.');
+      });
+    }
+  });
+};
+
+checkAndCreateTable();
+
 // Função para gerar um nome brasileiro aleatório
 const chance = new Chance();
 const firstNames = [
